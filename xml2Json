@@ -1,0 +1,64 @@
+/**
+ * This function coverts a DOM Tree into JavaScript Object. 
+ * @param srcDOM: DOM Tree to be converted. 
+ */
+function xml2json(srcDOM) {
+  let children = [...srcDOM.children];
+  
+  // base case for recursion. 
+  if (!children.length) {
+    return srcDOM.innerHTML
+  }
+  
+  // initializing object to be returned. 
+  let jsonResult = {};
+  
+  for (let child of children) {
+    
+    // checking is child has siblings of same name. 
+    let childIsArray = children.filter(eachChild => eachChild.nodeName === child.nodeName).length > 1;
+
+    // if child is array, save the values as array, else as strings. 
+    if (childIsArray) {
+      if (jsonResult[child.nodeName] === undefined) {
+        jsonResult[child.nodeName] = [xml2json(child)];
+      } else {
+        jsonResult[child.nodeName].push(xml2json(child));
+      }
+    } else {
+      jsonResult[child.nodeName] = xml2json(child);
+    }
+  }
+  
+  return jsonResult;
+}
+
+// testing the function
+let xmlstr = `<book><title>Some title</title>
+<description>some description </description>
+<author>
+    <id>1</id>
+    <name>some author name</name>
+</author>
+<review>nice book</review>
+<review>this book sucks</review>
+<review>amazing work</review></book>
+`;
+
+// converting to DOM Tree
+const parser = new DOMParser();
+const srcDOM = parser.parseFromString(xmlstr, "application/xml");
+
+// Converting DOM Tree To JSON. 
+console.log(xml2json(srcDOM));
+
+/** The output will be
+{
+  "book": {
+    "title": "Some title",
+    "description": "some description",
+    "author": { "id": "1", "name": "some author name" },
+    "review": ["nice book", "this book sucks", "amazing work"]
+  }
+}
+*/
