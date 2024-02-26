@@ -62,3 +62,28 @@ console.log(xml2json(srcDOM));
   }
 }
 */
+
+
+
+
+---------
+
+export function xml2json(xml: XMLDocument | Element) {
+  if (xml.children.length === 0)
+    return xml.textContent!.trim()
+
+  const obj = {} as Record<string, any>
+
+  for (let child of xml.children) {
+    const name = child.nodeName
+    if (obj[name] === undefined)
+      obj[name] = xml2json(child)
+    else { // a same tag name occurs, convert it to an array
+      if (!Array.isArray(obj[name]))
+        obj[name] = [obj[name]]
+      obj[name].push(xml2json(child))
+    }
+  }
+
+  return obj
+}
